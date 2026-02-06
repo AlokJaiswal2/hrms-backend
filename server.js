@@ -7,15 +7,32 @@ const sequelize = require("./config/db");
 const app = express();
 
 /**
- * ✅ CORS — stable & simple
+ * ✅ CORS — production + local safe
  */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://hrms-frontend-bsla.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      // allow Postman / server-side calls
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"), false);
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// handle preflight
+app.options("*", cors());
 
 app.use(express.json());
 
